@@ -1,5 +1,5 @@
 // index.js
-import express from 'express';
+const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
