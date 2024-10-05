@@ -17,15 +17,16 @@ const pnlRoute = require('./Routes/pnlRoute.js');
 
 const PORT = process.env.PORT || 8080;
 
-// CORS configuration to allow requests from multiple domains
+// CORS configuration to allow requests from multiple domains, including local dev
 const allowedOrigins = [
   'https://leveragex.onrender.com',  // Old domain
-  'https://leveragex.in'             // New domain
+  'https://leveragex.in',            // New domain
+  'http://localhost:3000'            // Local development environment
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Check if the request's origin is in the allowed origins array
+    // Allow requests from specified origins or requests without origin (like postman)
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
@@ -33,7 +34,7 @@ const corsOptions = {
     }
   },
   methods: 'GET,POST,PUT,DELETE',
-  credentials: true,  // Enable this if you need to send cookies or authentication tokens
+  credentials: true,  // Enable credentials if needed for cookies or authentication
   optionsSuccessStatus: 200  // For legacy browser support
 };
 
@@ -42,7 +43,7 @@ app.use(bodyParser.json());  // For parsing application/json
 app.use(cors(corsOptions));  // Enable CORS
 
 // Preflight request handling for all routes (important for CORS)
-app.options('*', cors(corsOptions)); // Handle preflight requests for all routes
+app.options('*', cors(corsOptions));  // Handle preflight requests for all routes
 
 // Route Definitions
 app.use('/auth', AuthRouter);  // Authentication routes (login, signup)
@@ -52,6 +53,17 @@ app.use('/api/users', userRoutes);  // User actions (balance, buy/sell stocks)
 app.use('/api/watchlist1', watchList1Routes);  // WatchList 1 (Rapid plan)
 app.use('/api/watchlist2', watchList2Routes);  // WatchList 2 (Evolution, Prime plans)
 app.use('/api', pnlRoute);  // Profit and Loss route
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  if (err instanceof Error) {
+    // Handle CORS errors specifically
+    if (err.message === 'Not allowed by CORS') {
+      return res.status(403).json({ message: 'CORS Error: Request blocked.' });
+    }
+  }
+  next(err);
+});
 
 // Start the server
 app.listen(PORT, () => {
