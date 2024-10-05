@@ -3,6 +3,10 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
+require('./Models/db'); // Ensure database connection
+
+// Import routes
 const AuthRouter = require('./Routes/authRoutes.js');
 const plansRouter = require('./Routes/plansRouter');
 const stockRoutes = require('./Routes/stockRoutes.js');
@@ -11,24 +15,33 @@ const watchList1Routes = require('./Routes/watchList1Routes.js');
 const watchList2Routes = require('./Routes/watchList2Routes.js');
 const pnlRoute = require('./Routes/pnlRoute.js');
 
-require('dotenv').config();
-require('./Models/db'); // Ensure database connection
 const PORT = process.env.PORT || 8080;
 
+// CORS configuration to allow requests from your frontend domain
+const corsOptions = {
+  origin: 'https://leveragex.onrender.com',  // Your frontend domain
+  methods: 'GET,POST,PUT,DELETE',
+  credentials: true,  // Enable this if you need to send cookies or authentication tokens
+  optionsSuccessStatus: 200  // For legacy browser support
+};
+
 // Middleware setup
-app.use(bodyParser.json());
-app.use(cors());
+app.use(bodyParser.json());  // For parsing application/json
+app.use(cors(corsOptions));  // Enable CORS
+
+// Preflight request handling for all routes (important for CORS)
+app.options('*', cors(corsOptions)); // Handle preflight requests for all routes
 
 // Route Definitions
-app.use('/auth', AuthRouter);
-app.use('/api/plans', plansRouter);
-app.use('/api/stocks', stockRoutes);
-app.use('/api/users', userRoutes); // Route for user-related actions like balance, stocks
-app.use('/api/watchlist1', watchList1Routes);
-app.use('/api/watchlist2', watchList2Routes);
-app.use('/api', pnlRoute);
+app.use('/auth', AuthRouter);  // Authentication routes (login, signup)
+app.use('/api/plans', plansRouter);  // Plans routes (buy, get plans)
+app.use('/api/stocks', stockRoutes);  // Stock-related routes
+app.use('/api/users', userRoutes);  // User actions (balance, buy/sell stocks)
+app.use('/api/watchlist1', watchList1Routes);  // WatchList 1 (Rapid plan)
+app.use('/api/watchlist2', watchList2Routes);  // WatchList 2 (Evolution, Prime plans)
+app.use('/api', pnlRoute);  // Profit and Loss route
 
-// Server start frontend
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
