@@ -5,28 +5,25 @@ const User = require("../Models/userModel");
 const signup = async (req, res) => {
     try {
         const { fullName, email, mobile, aadhaar, pan, password } = req.body;
-        const user = await User.findOne({ email });  // Check if email already exists
+
+        // Log incoming data for debugging
+        console.log("Signup request data:", req.body);
+
+        const user = await User.findOne({ email });
         if (user) {
-            return res.status(409)
-                .json({ message: 'Email already exists, please login', success: false });
+            return res.status(409).json({ message: 'Email already exists, please login', success: false });
         }
 
         const userModel = new User({ fullName, email, mobile, aadhaar, pan, password });
         userModel.password = await bcrypt.hash(password, 10);
         await userModel.save();
-        res.status(201)
-            .json({
-                message: "Signup successful",
-                success: true
-            });
+        res.status(201).json({ message: "Signup successful", success: true });
     } catch (err) {
-        res.status(500)
-            .json({
-                message: "Internal server error",
-                success: false
-            });
+        console.error("Signup error:", err);  // Log the exact error
+        res.status(500).json({ message: "Internal server error", success: false });
     }
 };
+
 
 const login = async (req, res) => {
     try {
