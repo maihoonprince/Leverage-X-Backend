@@ -17,9 +17,21 @@ const pnlRoute = require('./Routes/pnlRoute.js');
 
 const PORT = process.env.PORT || 8080;
 
-// CORS configuration to allow requests from your frontend domain
+// CORS configuration to allow requests from multiple domains
+const allowedOrigins = [
+  'https://leveragex.onrender.com',  // Old domain
+  'https://leveragex.in'             // New domain
+];
+
 const corsOptions = {
-  origin: 'https://leveragex.onrender.com',  // Your frontend domain
+  origin: function (origin, callback) {
+    // Check if the request's origin is in the allowed origins array
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: 'GET,POST,PUT,DELETE',
   credentials: true,  // Enable this if you need to send cookies or authentication tokens
   optionsSuccessStatus: 200  // For legacy browser support
